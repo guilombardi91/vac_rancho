@@ -1865,3 +1865,87 @@ Durante todo o desenvolvimento, preserve compatibilidade entre as fases.
 Não reescreva partes anteriormente implementadas sem necessidade.
 
 O objetivo é produzir um recurso RedM de qualidade de produção, e não apenas uma demonstração.
+
+---
+
+# IMPLEMENTAÇÃO — FASE 1 (em andamento)
+
+## Escopo entregue
+
+A primeira fase cria a fundação persistente do resource `rural_system`:
+
+* manifest e carregamento ordenado de `ox_lib`, `oxmysql` e `vorp_core`;
+* catálogo configurável de propriedades iniciais;
+* compra presencial de propriedade por ponto de mundo;
+* tabelas de ranchos, membros, permissões por cargo, arrendamento, razão financeira, transações e auditoria;
+* cargos `OWNER`, `MANAGER`, `WORKER`, `VETERINARIAN`, `FARMER` e `RANCH_HAND`;
+* caixa de rancho com depósito/retirada server-authoritative;
+* serviços e exports de consulta, autorização e crédito controlado;
+* limitação de chamadas, validação de distância e trilha de auditoria.
+
+## Instalação da Fase 1
+
+1. Instale/inicie `oxmysql`, `ox_lib` e `vorp_core` antes de `rural_system` no `server.cfg`.
+2. Importe `sql/install.sql` no banco MariaDB/MySQL do servidor.
+3. Copie a pasta para os resources e adicione `ensure rural_system` após as dependências.
+4. Ajuste preços e coordenadas em `config/ranches.lua` para o mapa e a economia do servidor.
+5. Confirme a API da versão instalada do VORP. O adaptador utiliza `Core.getUser(source)`, `getUsedCharacter`, `removeCurrency` e `addCurrency`; se sua versão divergir, altere somente `server/adapters/vorp.lua`.
+
+## Uso da Fase 1
+
+Vá a uma placa configurada em `Config.RanchListings`, pressione **E** e confirme a compra. A compra valida posição, saldo VORP, limite de propriedades e disponibilidade da listagem no servidor.
+
+## Exports de servidor
+
+* `exports.rural_system:GetRanch(ranchId)`
+* `exports.rural_system:GetPlayerRanches(characterId)`
+* `exports.rural_system:GetPlayerRanch(characterId[, ranchId])`
+* `exports.rural_system:HasRanchPermission(characterId, ranchId, permission)`
+* `exports.rural_system:AddRanchMoney(ranchId, amount, reason[, actorCharacterId])`
+
+## Limitações deliberadas da fase
+
+Animais, construções, inventário, colheitas, produção, contratos e empregados ainda não existem nesta fase; eles serão adicionados nas fases posteriores sem modificar o contrato de propriedade, RBAC e razão financeira. A gestão completa de sócios/arrendamentos já possui serviços de servidor, mas sua interface física administrativa será acrescentada junto ao dashboard administrativo.
+
+---
+
+# IMPLEMENTAÇÃO — FASE 2 (em andamento)
+
+## Escopo entregue
+
+* catálogo extensível de nove espécies e raças iniciais, com modelos e consumo por intervalo;
+* persistência individual de animais, pastos, fonte de água, estoque de cuidados e histórico de manejo;
+* criação automática do pasto, bebedouro, suprimentos e animais iniciais ao comprar uma propriedade configurada;
+* alimentação no cocho e reabastecimento no bebedouro como ações físicas no mundo, autorizadas e calculadas no servidor;
+* necessidades de fome, sede, saúde, felicidade e estresse simuladas em intervalos de quinze minutos, inclusive por tempo decorrido;
+* streaming visual de animais limitado por distância e quantidade, com despawn quando o jogador deixa o pasto;
+* exports `GetRanchAnimals` e `AddRanchAnimal`.
+
+## Operação
+
+Após adquirir uma propriedade, visite o curral. No cocho, pressione **E** para alimentar todos os animais com feno armazenado no estoque do rancho; no bebedouro, pressione **E** para distribuir água. Ambas as ações verificam personagem, cargo, distância, rancho, quantidade de animais e saldo de suprimento no servidor.
+
+O servidor executa a simulação em lotes de quinze minutos. Animais sem cuidados acumulam fome e sede, perdem felicidade/saúde e podem morrer; superlotação agrava estresse e perda de saúde. Não há loop por frame nem consulta contínua de todos os animais.
+
+## Limites técnicos conhecidos
+
+O streaming visual desta fase cria peds **locais e não autoritativos** apenas como representação dos registros persistidos. Saúde, posição persistente, inventário e qualquer resultado econômico continuam no servidor. A sincronização de peds networked/OneSync e comportamento de pastoreio coletivo será endurecida na Fase 9 depois de confirmar os natives e o modelo de ownership do artifact RedM instalado no servidor.
+
+---
+
+# IMPLEMENTAÇÃO — FASE 3 (em andamento)
+
+## Escopo entregue
+
+* configurações de gestação, critérios de reprodução, mutação genética limitada e doenças tratáveis;
+* tabelas persistentes de diagnósticos/tratamentos e de concepção/nascimento;
+* seleção de matrizes e reprodutores saudáveis no mesmo pasto, com gestação baseada em espécie;
+* herança por média genética dos pais com variação determinística limitada, evitando resultados puramente aleatórios;
+* nascimento persistente, logado e publicado pelo evento interno `rural:animalBorn`;
+* doenças por desidratação, desnutrição, condições respiratórias e parasitas, agravadas pela simulação;
+* posto veterinário físico com livro de atendimento, diagnóstico e tratamento que consome medicamento do estoque do rancho;
+* export `GetAnimalDiseases(animalId)`.
+
+## Permissões
+
+O cargo `VETERINARIAN` já possui `animals.veterinary`. Proprietários mantêm acesso total; outros cargos só podem diagnosticar/tratar caso recebam a permissão no papel da propriedade. Todo atendimento valida a posição do jogador, associação ao rancho e doença ativa no servidor.
