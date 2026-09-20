@@ -1930,3 +1930,22 @@ O servidor executa a simulação em lotes de quinze minutos. Animais sem cuidado
 ## Limites técnicos conhecidos
 
 O streaming visual desta fase cria peds **locais e não autoritativos** apenas como representação dos registros persistidos. Saúde, posição persistente, inventário e qualquer resultado econômico continuam no servidor. A sincronização de peds networked/OneSync e comportamento de pastoreio coletivo será endurecida na Fase 9 depois de confirmar os natives e o modelo de ownership do artifact RedM instalado no servidor.
+
+---
+
+# IMPLEMENTAÇÃO — FASE 3 (em andamento)
+
+## Escopo entregue
+
+* configurações de gestação, critérios de reprodução, mutação genética limitada e doenças tratáveis;
+* tabelas persistentes de diagnósticos/tratamentos e de concepção/nascimento;
+* seleção de matrizes e reprodutores saudáveis no mesmo pasto, com gestação baseada em espécie;
+* herança por média genética dos pais com variação determinística limitada, evitando resultados puramente aleatórios;
+* nascimento persistente, logado e publicado pelo evento interno `rural:animalBorn`;
+* doenças por desidratação, desnutrição, condições respiratórias e parasitas, agravadas pela simulação;
+* posto veterinário físico com livro de atendimento, diagnóstico e tratamento que consome medicamento do estoque do rancho;
+* export `GetAnimalDiseases(animalId)`.
+
+## Permissões
+
+O cargo `VETERINARIAN` já possui `animals.veterinary`. Proprietários mantêm acesso total; outros cargos só podem diagnosticar/tratar caso recebam a permissão no papel da propriedade. Todo atendimento valida a posição do jogador, associação ao rancho e doença ativa no servidor.

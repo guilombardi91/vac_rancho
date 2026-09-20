@@ -40,8 +40,9 @@ function AnimalService.createAnimal(ranchId, pastureId, definition)
     if AnimalRepository.countAnimalsByPasture(pastureId) >= tonumber(pasture.capacity) then return false, 'O pasto atingiu sua capacidade.' end
     local weight = tonumber(definition.weight) or species.matureWeight * 0.35
     if weight <= 0 or weight > species.matureWeight * 1.5 then return false, 'Peso inválido.' end
+    local genetics = definition.genetics or (breed and breed.genetics) or {}
     local firstId = MySQL.insert.await([[INSERT INTO ranch_animals (ranch_id, pasture_id, species_key, breed_key, sex, name, born_at, weight, genetics_json, x, y, z)
-        VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)]], { ranchId, pastureId, definition.species, definition.breed, definition.sex, RuralUtils.trim(definition.name) or species.label, weight, json.encode((breed and breed.genetics) or {}), pasture.x, pasture.y, pasture.z })
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)]], { ranchId, pastureId, definition.species, definition.breed, definition.sex, RuralUtils.trim(definition.name) or species.label, weight, json.encode(genetics), pasture.x, pasture.y, pasture.z })
     if not firstId then return false, 'Não foi possível registrar o animal.' end
     local spawn = randomSpawn(pasture, firstId)
     MySQL.update.await('UPDATE ranch_animals SET x = ?, y = ?, z = ? WHERE id = ?', { spawn.x, spawn.y, spawn.z, firstId })

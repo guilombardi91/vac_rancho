@@ -4,7 +4,7 @@ Config.Animals = {
     streamingRadius = 90.0,
     streamingCheckMilliseconds = 5000,
     maxVisiblePerPasture = 20,
-    starterSupplies = { hay = 100.0, water = 200.0 },
+    starterSupplies = { hay = 100.0, water = 200.0, medicine_basic = 8.0 },
     feedAmountPerAnimal = 4.0,
     waterAmountPerAnimal = 8.0,
     initialAnimals = { valentine_starter = { { species = 'cow', breed = 'angus', sex = 'female', name = 'Margarida' }, { species = 'cow', breed = 'angus', sex = 'female', name = 'Estrela' } } },

@@ -48,6 +48,28 @@ lib.callback.register('rural_system:server:getAnimalStream', function(source, li
     return player and AnimalService.getStreamData(player.id, listingKey) or nil
 end)
 
+lib.callback.register('rural_system:server:getVeterinaryPanel', function(source, listingKey)
+    if type(listingKey) ~= 'string' then return { ok = false, message = 'Posto inválido.' } end
+    local data, err = VeterinaryService.getPanel(source, listingKey)
+    return data and { ok = true, data = data } or { ok = false, message = err }
+end)
+
+RegisterNetEvent('rural_system:server:diagnoseAnimal', function(listingKey, animalId)
+    local source = source
+    if not RuralSecurity.rateLimit(source, 'veterinary') then return reply(source, false, 'Muitas solicitações; aguarde.') end
+    if type(listingKey) ~= 'string' or not tonumber(animalId) then return reply(source, false, 'Dados inválidos.') end
+    local ok, result = VeterinaryService.diagnose(source, listingKey, animalId)
+    reply(source, ok, ok and (#result > 0 and ('Diagnóstico concluído: %s condição(ões) encontrada(s).'):format(#result) or 'Diagnóstico concluído: animal saudável.') or result)
+end)
+
+RegisterNetEvent('rural_system:server:treatAnimal', function(listingKey, animalId, diseaseKey)
+    local source = source
+    if not RuralSecurity.rateLimit(source, 'veterinary') then return reply(source, false, 'Muitas solicitações; aguarde.') end
+    if type(listingKey) ~= 'string' or not tonumber(animalId) or type(diseaseKey) ~= 'string' then return reply(source, false, 'Dados inválidos.') end
+    local ok, reason = VeterinaryService.treat(source, listingKey, animalId, diseaseKey)
+    reply(source, ok, ok and 'Tratamento concluído.' or reason)
+end)
+
 AddEventHandler('onResourceStart', function(resource)
     if resource ~= RuralConstants.ResourceName then return end
     if GetResourceState('oxmysql') ~= 'started' then error('[rural_system] oxmysql precisa estar iniciado antes deste resource.') end

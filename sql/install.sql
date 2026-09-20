@@ -111,3 +111,24 @@ CREATE TABLE IF NOT EXISTS ranch_animal_care_log (
     CONSTRAINT fk_animal_care_ranch FOREIGN KEY (ranch_id) REFERENCES ranches(id) ON DELETE CASCADE,
     CONSTRAINT fk_animal_care_animal FOREIGN KEY (animal_id) REFERENCES ranch_animals(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ranch_animal_health (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, animal_id BIGINT UNSIGNED NOT NULL, ranch_id BIGINT UNSIGNED NOT NULL,
+    disease_key VARCHAR(48) NOT NULL, severity DECIMAL(5,2) NOT NULL DEFAULT 0.00, status VARCHAR(16) NOT NULL DEFAULT 'active',
+    diagnosed_by_character_id VARCHAR(64) NULL, diagnosed_at DATETIME NULL, treated_by_character_id VARCHAR(64) NULL, treated_at DATETIME NULL,
+    started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, resolved_at DATETIME NULL, notes VARCHAR(255) NULL,
+    PRIMARY KEY (id), KEY idx_animal_health_active (animal_id, disease_key, status), KEY idx_animal_health_ranch_status (ranch_id, status),
+    CONSTRAINT fk_animal_health_animal FOREIGN KEY (animal_id) REFERENCES ranch_animals(id) ON DELETE CASCADE,
+    CONSTRAINT fk_animal_health_ranch FOREIGN KEY (ranch_id) REFERENCES ranches(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ranch_breeding (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ranch_id BIGINT UNSIGNED NOT NULL, mother_animal_id BIGINT UNSIGNED NOT NULL,
+    father_animal_id BIGINT UNSIGNED NOT NULL, offspring_animal_id BIGINT UNSIGNED NULL, state VARCHAR(24) NOT NULL DEFAULT 'pregnant',
+    conceived_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, due_at DATETIME NOT NULL, completed_at DATETIME NULL, genetics_seed BIGINT UNSIGNED NOT NULL,
+    PRIMARY KEY (id), UNIQUE KEY uq_breeding_active_mother (mother_animal_id, state), KEY idx_breeding_due (state, due_at), KEY idx_breeding_ranch (ranch_id, state),
+    CONSTRAINT fk_breeding_ranch FOREIGN KEY (ranch_id) REFERENCES ranches(id) ON DELETE CASCADE,
+    CONSTRAINT fk_breeding_mother FOREIGN KEY (mother_animal_id) REFERENCES ranch_animals(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_breeding_father FOREIGN KEY (father_animal_id) REFERENCES ranch_animals(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_breeding_offspring FOREIGN KEY (offspring_animal_id) REFERENCES ranch_animals(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

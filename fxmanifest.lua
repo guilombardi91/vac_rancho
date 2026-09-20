@@ -13,6 +13,7 @@ shared_scripts {
     'config/ranches.lua',
     'config/permissions.lua',
     'config/animals.lua',
+    'config/veterinary.lua',
     'shared/constants.lua',
     'shared/enums.lua',
     'shared/utils.lua'
@@ -28,6 +29,7 @@ server_scripts {
     'server/repositories/animal_repository.lua',
     'server/services/ranch.lua',
     'server/services/animals.lua',
+    'server/services/veterinary.lua',
     'server/simulation/animals.lua',
     'server/exports.lua',
     'server/main.lua'
@@ -36,6 +38,7 @@ server_scripts {
 client_scripts {
     'client/interaction.lua',
     'client/animals.lua',
+    'client/veterinary.lua',
     'client/ui.lua',
     'client/main.lua'
 }
